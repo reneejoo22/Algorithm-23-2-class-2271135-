@@ -1,14 +1,86 @@
 // 알고리즘 1주차
 //자료구조 복습_트리 구현
+//레벨순환_ 원형큐가 아니라 이중연결리스트 사용해보기
 
 #include <stdio.h>
-//#include <stdlib.h>
-//#include <memory.h>
+#include <stdlib.h>
+#include <memory.h>
 
 typedef struct TreeNode {
 	char data;
 	struct TreeNode *left, *right;
 }TreeNode;
+
+//이중연결 리스트 시작///////////////////////
+
+// 이중 연결 리스트 노드 구조체 정의
+typedef struct DLinkedNode {
+	TreeNode* data;		//받을 수 있는 데이터를 트리노드 포인터로
+	struct DLinkedNode* prev;	//이전 주소지
+	struct DLinkedNode* next;	//이후 주소지
+} DLinkedNode;
+
+// 이중 연결 리스트 초기화 함수
+void init(DLinkedNode* d) {
+	d->prev = d->next = d;
+}
+
+// 이중 연결 리스트에 요소 삽입 함수
+void dinsert(DLinkedNode* before, TreeNode* data) {
+
+	DLinkedNode* newnode = (DLinkedNode*)malloc(sizeof(DLinkedNode));
+	newnode->data = data;	//새 노드에 멤버변수의 데이터 값 넣기
+
+	newnode->prev = before;		//1단계_ 새노드의 이전은 before를 가르켜야됨
+	newnode->next = before->next;  //2단계_ 새노드의 이후는 before가 가르키던 이후를 가르켜야됨
+
+	before->next->prev = newnode;	//3단계_ 뉴노드의 앞노드가 주체가 됨. 앞노드의 이전은 뉴 노드를 가르킴
+	before->next = newnode;		//4단계_ 이전 노드의 다음이 뉴노드를 가르킴
+}
+
+// 이중 연결 리스트에서 요소 삭제 함수
+TreeNode* ddelete(DLinkedNode* node) {
+
+	if (node->prev == node) {	//자신만 있다는 뜻
+		return NULL; // 리스트가 비어 있는 경우
+	}
+
+	TreeNode* data = node->data;	//삭제할 노드의 데이터를 저장함
+
+	node->prev->next = node->next;	//1단계_ 삭제할 노드의 이전 노드가 주체가 됨. 다음을 가르킴
+	node->next->prev = node->prev; //2단계_ 삭제할 노드의 이후 노드가 주체가 됨. 이전을 가르킴
+	free(node);
+
+	return data;  //값 넘겨줌
+}
+//이중연결 리스트 끝
+
+// 트리의 레벨 순회 함수
+void LevelOrder(TreeNode* root) {
+
+	if (root == NULL) {
+		return;
+	}
+
+	DLinkedNode head;
+	init(&head);
+	dinsert(&head, root);	//n6값 넣기
+
+	while (head.next != &head) {	//노드가 하나만 남지 않았다면 계속 반복
+		TreeNode* current_data = ddelete(head.next);	//삭제할 값 저장하고
+		printf("%c ", current_data->data);	//출력
+
+		if (current_data->left) {	//왼쪽 순환
+			dinsert(head.prev, current_data->left);
+		}
+
+		if (current_data->right) {
+			dinsert(head.prev, current_data->right);
+		}
+	}
+}
+
+//레벨순회 끝
 
 /*
 		 D(6)
@@ -69,6 +141,10 @@ int main() {
 
 	printf("후위순환\n");
 	postorder(root);
+	printf("\n");
+
+	printf("레벨순환\n");
+	LevelOrder(root);
 	printf("\n");
 }
 
