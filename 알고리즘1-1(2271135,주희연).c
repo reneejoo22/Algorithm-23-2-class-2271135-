@@ -19,6 +19,8 @@ typedef struct TreeNode {
 
 */
 
+ll
+
 TreeNode n1 = { 'B',NULL,NULL };
 TreeNode n2 = { 'H',NULL,NULL };
 TreeNode n3 = { 'I',NULL,NULL };
