@@ -1,36 +1,14 @@
-// 올기긱
-
 // 알고리즘 1주차
-//자료구조 복습_트리 구현_ 탐색
+//자료구조 복습_트리 구현_ 삭제
+/*주의사항_ 동작으로 할당해야함, 
+정적으로 할당할시_ 트리의 크기와 구조가 컴파일 타임에 고정되기 때문에, 노드를 삭제, 변경 어렵
+*/
 
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
-
-
-typedef struct TreeNode {
-	char data;
-	struct TreeNode *left, *right;
-}TreeNode;
-
-/*
-* 영어 데이터로 구성된 트리
-		 D(6)
-	   /     \
-	  A(4)    G(5)
-	 /       /  \
-   B(1)   H(2)  I(3)
-   */
-
-
-TreeNode m1 = { 'B',NULL,NULL };
-TreeNode m2 = { 'H',NULL,NULL };
-TreeNode m3 = { 'I',NULL,NULL };
-TreeNode m4 = { 'A',&m1,NULL };
-TreeNode m5 = { 'G',&m2, &m3 };
-TreeNode m6 = { 'D',&m4,&m5 };
-
-TreeNode *root = &m6;
+#include <stdlib.h>
+#include <memory.h>
 
 
 typedef struct TreeNode2 {
@@ -38,46 +16,36 @@ typedef struct TreeNode2 {
 	struct TreeNode2* left, * right;
 }TreeNode2;
 
-/*
- 숫자 데이터로 구성된 트리
-		 D(6)
-	   /     \
-	  A(4)    G(5)
-	 /       /  \
-   B(1)   H(2)  I(3)
-   */
-
-TreeNode2 n1 = { 1,NULL,NULL };
-TreeNode2 n2 = { 2,NULL,NULL };
-TreeNode2 n3 = { 3,NULL,NULL };
-TreeNode2 n4 = { 4,&n1,NULL };
-TreeNode2 n5 = { 5,&n2, &n3 };
-TreeNode2 n6 = { 6 ,&n4,&n5 };
-
-TreeNode2* roott = &n6;
-
-//TreeNode (문자)탐색 함수
-/*
- 두가지 경우
- 1. 아이템이 루트보다 크거나 작은 경우
- 2. 아이템이 루트와 값이 일치하는 경우
- **루트가 빈 값이 아닌지 확인
-
- 아래 방식은 반복적인 방식
-*/
-
-TreeNode* search(TreeNode* root, char item) {
-
-	TreeNode* tmp = root;
-
-	while (tmp != NULL) {
-		if (item == tmp->data)return tmp; //루트에서 바로 찾으면 값 반환
-		else if (item < tmp->data)
-			tmp = tmp->left;
-		else
-			tmp = tmp->right;
+//트리노드를 동적으로 할당하는 함수
+TreeNode2* CreateNode(int data) {
+	TreeNode2* newNode = (TreeNode2*)malloc(sizeof(TreeNode2));	//트리노드만큼의 메모리 동적할당
+	
+	if (newNode == NULL) {
+		printf("동적 메모리 할당 오류");
 	}
-	return NULL;
+
+	newNode->data = data;
+	newNode->left = NULL;
+	newNode->right = NULL;
+
+	return newNode;
+
+}
+
+//트리에 노드 삽입 함수
+TreeNode2* insert(TreeNode2* root, int data) {
+	if (root == NULL) {
+		return CreateNode(data);
+	}
+
+	if (data < root->data) {	//받은 값이 루트보다 작으면 왼
+		root->left = insert(root->left, data);	//왼쪽에 심어줌
+	}
+	else if (data > root->data) {
+		root->right = insert(root->right, data);	//오른쪽에 심어줌
+	}
+
+	return root;
 }
 
 //TreeNode2 (숫자)탐색 함수
@@ -86,7 +54,6 @@ TreeNode* search(TreeNode* root, char item) {
  1. 아이템이 루트보다 크거나 작은 경우
  2. 아이템이 루트와 값이 일치하는 경우
  **루트가 빈 값이 아닌지 확인
-
  아래 방식은 순환적인 방식
 */
 
@@ -105,33 +72,135 @@ int explore2(int item, TreeNode2* root) {	//숫자용
 }
 
 
+TreeNode2* MinNode(TreeNode2* root) {
+
+	TreeNode2* min = root;
+
+	while (min->left != NULL)	//왼쪽 트리에서 제일 작은 값
+		min = min->left;
+	return min;
+}
+
+//삭제함수
+/*
+1. 삭제 노드가 단말노드일때
+2. 삭제 노드가 비단말 노드 && 자식이 한개일때
+3. 삭제 노드가 비단말 노드 && 자식이 두개일때
+*/
+
+TreeNode2* DeleteNode(TreeNode2* root, int key) {
+	
+	if (root == NULL) { 
+		//printf("삭제할 값 %d 가 트리에 존재하지 않습니다.\n", key);
+		return NULL; 
+	}	//root 값이 비어있으면 NULL 돌려보내기
+
+	if (key < root->data) {			//키가 루트보다 작으면 왼쪽 트리 탐색
+		root->left = DeleteNode(root->left, key);
+	}
+
+	else if (key > root->data) {	//키가 루트보다 크면 오른쪽 트리 탐색
+		root->right = DeleteNode(root->right, key);
+	}
+
+	else {		//else는 root->data == key 인 경우
+
+		//첫번째, 두번째 경우
+		if (root->left == NULL) {	//삭제할 함수의 왼쪽이 비어있을때	
+			TreeNode2* tmp = root->right;	//오른쪽 값 저장
+			free(root);	//이외의 값은 없애줌
+			return tmp;	//오른쪽 값은 돌려보내줌, 삭제할 값이 아니니
+		}
+		//첫번째, 두번째 경우
+		else if (root->right == NULL) {	//삭제할 함수의 오른쪽이 비어있을때	
+			TreeNode2* tmp = root->left;
+			free(root);
+			return tmp;
+		}
+		//세번째 경우
+		
+		TreeNode2* tmp = MinNode(root->right);		//오른쪽 트리에서 제일 작은 값을 찾기 위해서
+		
+		root->data = tmp->data;	//노드의 데이터를 삭제할 노드의 데이터에 넣음
+		root->right = DeleteNode(root->right, tmp->data);	//첫번째, 두번째 경우에 해당되어서 삭제됨, 이전 위치에 있던 건 삭제
+	}
+	return root;	
+}
+
+void preorder(TreeNode2* root) {	//전위순회>> 중 왼오
+
+	if (root != NULL) {
+		printf("%d ", root->data);
+		preorder(root->left);
+		preorder(root->right);
+	}
+}
+
+void inorder(TreeNode2* root) {	//중위순회>> 왼중오
+
+	if (root != NULL) {
+
+		inorder(root->left);
+		printf("%d ", root->data);
+		inorder(root->right);
+	}
+}
+
+
 int main() {
 
-	// explore 이용
-	char find;
+	TreeNode2* root = NULL;
 
-	printf("탐색할 문자 입력-> ");
-	scanf("%c", &find);
+	/*
+ 숫자 데이터로 구성된 트리
+		  n6(6)
+	   /       \
+	  n4(4)    n5(7)
+	 /         /  \
+   n1(1)   n2(2)  n3(3)
+   TreeNode2* n1 = CreateNode(1, NULL, NULL);
+	TreeNode2* n2 = CreateNode(2, NULL, NULL);
+	TreeNode2* n3 = CreateNode(3, NULL, NULL);
+	TreeNode2* n4 = CreateNode(4, n1, NULL);
+	TreeNode2* n5 = CreateNode(7, n2, n3);
+	TreeNode2* n6 = CreateNode(6, n4, n5);
 
-	if (NULL != search(&m6, find)) {
-		printf("%c 찾음\n", find);
-	}
-	else printf("%c 없음\n", find);
+	TreeNode2* root = n6;
+   */
 
-	// explore 2 이용/////////////////////////
-
-	int finding;
-
-	printf("탐색할 수 입력-> ");
-	scanf("%d", &finding);
-	//printf("%d 입력받음", finding);
+	root = insert(root, 3);
+	root = insert(root, 2);
+	root = insert(root, 1);
+	root = insert(root, 4);
+	root = insert(root, 5);
+	root = insert(root, 6);
 	
-	int result2 = explore2(finding, &n6);
 
-	if (result2 == 1) {
-		printf("%d 찾음", finding);
+	printf("삭제 전의 트리 모습-> ");
+	preorder(root);
+
+	int delete;
+	
+	printf("\n삭제할 노드값을 입력하시오->\n");
+	scanf("%d", &delete);
+
+	root = DeleteNode(root, delete);
+
+	if (root != NULL) {
+		printf("%d 삭제함\n", delete);
+		printf("삭제 후의 트리 모습-> ");
+		preorder(root);
 	}
-	else { printf("%d 없음", finding); }
+	else {
+		printf("%d 없는 값이라서 삭제못함\n", delete);
+	}
 
+	printf("중위순회");
+	inorder(root);
+	// 메모리 해제
+	
+	//free(root);
+
+	
 }
 	
