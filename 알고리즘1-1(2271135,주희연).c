@@ -71,6 +71,15 @@ int explore2(int item, TreeNode2* root) {	//숫자용
 	}
 }
 
+void preorder(TreeNode2* root) {	//전위순회>> 중왼오
+
+	if (root != NULL) {
+		printf("%d ", root->data);
+		preorder(root->left);
+		preorder(root->right);
+	}
+}
+
 
 TreeNode2* MinNode(TreeNode2* root) {
 
@@ -91,7 +100,7 @@ TreeNode2* MinNode(TreeNode2* root) {
 TreeNode2* DeleteNode(TreeNode2* root, int key) {
 	
 	if (root == NULL) { 
-		//printf("삭제할 값 %d 가 트리에 존재하지 않습니다.\n", key);
+		printf("삭제할 값 %d 가 트리에 존재하지 않습니다.\n", key);
 		return NULL; 
 	}	//root 값이 비어있으면 NULL 돌려보내기
 
@@ -124,18 +133,12 @@ TreeNode2* DeleteNode(TreeNode2* root, int key) {
 		root->data = tmp->data;	//노드의 데이터를 삭제할 노드의 데이터에 넣음
 		root->right = DeleteNode(root->right, tmp->data);	//첫번째, 두번째 경우에 해당되어서 삭제됨, 이전 위치에 있던 건 삭제
 	}
+	
 	return root;	
 }
 
-void preorder(TreeNode2* root) {	//전위순회>> 중 왼오
 
-	if (root != NULL) {
-		printf("%d ", root->data);
-		preorder(root->left);
-		preorder(root->right);
-	}
-}
-
+/*
 void inorder(TreeNode2* root) {	//중위순회>> 왼중오
 
 	if (root != NULL) {
@@ -146,26 +149,40 @@ void inorder(TreeNode2* root) {	//중위순회>> 왼중오
 	}
 }
 
+void postorder(TreeNode2* root) {	//후위순환_ 왼오중
+	// BA HGI D
+	if (root != NULL) {
+		postorder(root->left);  //왼
+		postorder(root->right);  //오
+		printf("%d ", root->data);  //중
+	}
+}
+*/
+
+//메모리 해제
+void FreeTree(TreeNode2* root) {
+	if (root == NULL) {
+		return;
+	}
+
+	FreeTree(root->left);
+	FreeTree(root->right);
+
+	free(root);
+}
 
 int main() {
 
 	TreeNode2* root = NULL;
 
 	/*
- 숫자 데이터로 구성된 트리
-		  n6(6)
-	   /       \
-	  n4(4)    n5(7)
-	 /         /  \
-   n1(1)   n2(2)  n3(3)
-   TreeNode2* n1 = CreateNode(1, NULL, NULL);
-	TreeNode2* n2 = CreateNode(2, NULL, NULL);
-	TreeNode2* n3 = CreateNode(3, NULL, NULL);
-	TreeNode2* n4 = CreateNode(4, n1, NULL);
-	TreeNode2* n5 = CreateNode(7, n2, n3);
-	TreeNode2* n6 = CreateNode(6, n4, n5);
-
-	TreeNode2* root = n6;
+       3
+     / \
+    2   4
+   /     \
+  1       5
+           \
+            6
    */
 
 	root = insert(root, 3);
@@ -176,8 +193,9 @@ int main() {
 	root = insert(root, 6);
 	
 
-	printf("삭제 전의 트리 모습-> ");
-	preorder(root);
+	printf("삭제 함수 실행 전의 전위 트리 모습-> "); preorder(root);
+	//printf("중위순회");inorder(root);
+	//printf("후위순환");postorder(root);
 
 	int delete;
 	
@@ -186,21 +204,21 @@ int main() {
 
 	root = DeleteNode(root, delete);
 
-	if (root != NULL) {
-		printf("%d 삭제함\n", delete);
-		printf("삭제 후의 트리 모습-> ");
-		preorder(root);
-	}
-	else {
+	/*>> can't be working
+	if (root == NULL) {
 		printf("%d 없는 값이라서 삭제못함\n", delete);
 	}
-
-	printf("중위순회");
-	inorder(root);
+	else {
+		printf("%d 삭제함\n", delete);
+		printf("삭제 후의 전위 순회 트리 모습-> ");
+		preorder(root);
+	}
+	*/
+	printf("삭제 함수 실행 후의 전위 순회 트리 모습-> ");
+	preorder(root);
 	// 메모리 해제
 	
-	//free(root);
-
+	FreeTree(root);
 	
 }
 	
